@@ -4,17 +4,17 @@
 from CSXCAD  import ContinuousStructure
 
 materials = {
-    'PI1': {'Epsilon': 2.94},
-    'TOPNIT': {'Epsilon': 7.5},
-    'NILD6': {'Epsilon': 4},
-    'NILD5': {'Epsilon': 4.1},
-    'NILD4': {'Epsilon': 4.2},
-    'NILD3': {'Epsilon': 4.5},
-    'NILD2': {'Epsilon': 4.05},
-    'LINT': {'Epsilon': 7.3},
-    'PSG': {'Epsilon': 3.9},
-    'FOX': {'Epsilon': 3.9},
-    'substr': {'Kappa': 1.5e4},
+    'PI1': {'Epsilon': 2.94, 'z_min': 5.7488, 'z_max': 11.8834},
+    'TOPNIT': {'Epsilon': 7.5, 'z_min': 5.3711, 'z_max': 5.7488},
+    'NILD6': {'Epsilon': 4, 'z_min': 4.0211, 'z_max': 5.3711},
+    'NILD5': {'Epsilon': 4.1, 'z_min': 2.7861, 'z_max': 4.0211},
+    'NILD4': {'Epsilon': 4.2, 'z_min': 2.0061, 'z_max': 2.7861},
+    'NILD3': {'Epsilon': 4.5, 'z_min': 1.3761, 'z_max': 2.0061},
+    'NILD2': {'Epsilon': 4.05, 'z_min': 1.0111, 'z_max': 1.3761},
+    'LINT': {'Epsilon': 7.3, 'z_min': 0.9361, 'z_max': 1.0111},
+    'PSG': {'Epsilon': 3.9, 'z_min': 0.3262, 'z_max': 0.9361},
+    'FOX': {'Epsilon': 3.9, 'z_min': 0.0, 'z_max': 0.3262},
+    'substr': {'Kappa': 1.5e4, 'z_min': -1.0, 'z_max': 0.0},
     'poly': {'Kappa': 1.152605e+05},
     'licon': {'Kappa': 0.9361e-6 / (152 * 0.17e-6 * 0.17e-6)},
     'li': {'Kappa': 7.812500e+05},
@@ -30,7 +30,7 @@ materials = {
     'metal5': {'Kappa': 2.784740e+07}
 }
 
-def add_materials(CSX):
+def add_materials(CSX, x_min, x_max, y_min, y_max):
     """
     Add materials to the CSX object
 
@@ -40,8 +40,24 @@ def add_materials(CSX):
     materials : dict
     """
     print("Adding Materials")
+
+    materials = {}
     for material_name, material_data in materials.items():
         
         eps = material_data.get('Epsilon', 0)
         kappa = material_data.get('Kappa', 0)
-        CSX.AddMaterial(material_name, epsilon=eps, kappa=kappa)
+        material = CSX.AddMaterial(material_name, epsilon=eps, kappa=kappa)
+
+        z_min = material_data.get('z_min', 0)
+        z_max = material_data.get('z_max', 0)
+
+        materials[material_name] = material
+
+        if z_min == 0 and z_max == 0:
+            continue
+        start = [x_min, y_min, z_min]
+        stop = [x_max, y_max, z_max]
+
+        material.AddBox(start, stop)
+
+    return materials
